@@ -4,11 +4,16 @@
 
 
 
+int main() {
+    
+    Station* root = NULL;
+    loadStationManager("C:\\Users\\talg1\\source\\repos\\final_project\\final_project\\Stations.txt",&root);
+    if (!root) {
+        printf("Failed to load stations\n");
+        return 1;
+    }
 
 
-void main() 
-{
-	Station* stations = loadStationManager("C:\\Users\\talg1\\source\\repos\\final_project\\final_project\\Stations.txt");
-	stations;
-  
+
+    return 0;
 }

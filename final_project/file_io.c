@@ -6,9 +6,7 @@
 #include <string.h>
 
 /* Manager for Stations BST */
-typedef struct {
-    Station* head;       /* root של העץ */
-} StationManager;
+
 
 /* Insert station into BST by ID */
 Station* insertStation(Station* root, Station* newSt) {
@@ -21,7 +19,7 @@ Station* insertStation(Station* root, Station* newSt) {
 }
 
 /* Load stations from a CSV file into a BST and return as manager */
-StationManager* loadStationManager(const char* filename) {
+void loadStationManager(const char* filename, Station** root) {
     FILE* fp = fopen(filename, "r");
     if (!fp) {
         perror("fopen");
@@ -29,7 +27,7 @@ StationManager* loadStationManager(const char* filename) {
     }
 
     char line[256];
-    Station* root = NULL;
+    
     int lineNum = 0;
 
     while (fgets(line, sizeof(line), fp)) {
@@ -66,13 +64,12 @@ StationManager* loadStationManager(const char* filename) {
         st->left = st->right = NULL;
 
         /* הוספה לעץ */
-        root = insertStation(root, st);
+        
+        *root = insertStation(*root, st);
     }
 
     fclose(fp);
+    
 
-    /* יצירת מנהל תחנות */
-    StationManager* mgr = malloc(sizeof(StationManager));
-    mgr->head = root;
-    return mgr;
+
 }

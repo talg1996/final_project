@@ -85,4 +85,8 @@ typedef struct Station {
     struct Station *left;  /* Left subtree */
 } Station;
 
+typedef struct {
+    Station* head;       /* root של העץ */
+} StationManager;
+
 #endif /* STRUCTURES_H */
