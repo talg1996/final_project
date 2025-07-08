@@ -1,14 +1,9 @@
-/* file_io.c */
-#define _CRT_SECURE_NO_WARNINGS  /* להשבתת אזהרות MSVC על פונקציות "לא בטוחות" */
+#define _CRT_SECURE_NO_WARNINGS
 #include "structs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Manager for Stations BST */
-
-
-/* Insert station into BST by ID */
 Station* insertStation(Station* root, Station* newSt) {
     if (!root) return newSt;
     if (newSt->id < root->id)
@@ -18,8 +13,49 @@ Station* insertStation(Station* root, Station* newSt) {
     return root;
 }
 
-/* Load stations from a CSV file into a BST and return as manager */
-void loadStationManager(const char* filename, Station** root) {
+Station* createStationFromLine(const char* line) {
+    char buffer[256];
+    strncpy(buffer, line, sizeof(buffer));
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    char* context = NULL;
+    char* token = strtok_s(buffer, ",", &context);
+    if (!token) return NULL;
+
+    Station* st = malloc(sizeof(Station));
+    if (!st) return NULL;
+    memset(st, 0, sizeof(Station));
+
+    st->id = atoi(token);
+
+    token = strtok_s(NULL, ",", &context); // name
+    if (token) {
+        st->name = malloc(strlen(token) + 1);
+        if (st->name) strcpy(st->name, token);
+    }
+    else {
+        st->name = malloc(1);
+        st->name[0] = '\0';
+    }
+
+    token = strtok_s(NULL, ",", &context); // nPorts
+    st->nPorts = token ? atoi(token) : 0;
+
+    token = strtok_s(NULL, ",", &context); // coord.x
+    st->coord.x = token ? atof(token) : 0.0;
+
+    token = strtok_s(NULL, ",", &context); // coord.y
+    st->coord.y = token ? atof(token) : 0.0;
+
+    st->portsList = NULL;
+    st->nCars = 0;
+    st->carQueue.front = st->carQueue.rear = NULL;
+    st->left = st->right = NULL;
+
+    return st;
+}
+
+Station* loadStationManager(const char* filename) {
     FILE* fp = fopen(filename, "r");
     if (!fp) {
         perror("fopen");
@@ -27,49 +63,22 @@ void loadStationManager(const char* filename, Station** root) {
     }
 
     char line[256];
-    
+    Station* root = NULL;
     int lineNum = 0;
 
     while (fgets(line, sizeof(line), fp)) {
         lineNum++;
-        if (lineNum == 1) continue;  /* דילוג על כותרת */
+        if (lineNum == 1) continue;  // skip header
 
-        /* הסרת תו \n בסוף השורה */
+        // Remove trailing newline characters
         line[strcspn(line, "\r\n")] = '\0';
 
-        /* פירוק השורה לשדות באמצעות strtok_s */
-        char* context = NULL;
-        char* token = strtok_s(line, ",", &context);
-        if (!token) continue;
-
-        /* הקצאת תחנה חדשה */
-        Station* st = malloc(sizeof(Station));
-        memset(st, 0, sizeof(Station));
-
-        /* מילוי שדות תחנה */
-        st->id = atoi(token);
-        token = strtok_s(NULL, ",", &context);
-        st->name = token ? _strdup(token) : _strdup("");
-        token = strtok_s(NULL, ",", &context);
-        st->nPorts = token ? atoi(token) : 0;
-        token = strtok_s(NULL, ",", &context);
-        st->coord.x = token ? atof(token) : 0.0;
-        token = strtok_s(NULL, ",", &context);
-        st->coord.y = token ? atof(token) : 0.0;
-
-        /* אתחול שדות נוספים */
-        st->portsList = NULL;
-        st->nCars = 0;
-        st->carQueue.front = st->carQueue.rear = NULL;
-        st->left = st->right = NULL;
-
-        /* הוספה לעץ */
-        
-        *root = insertStation(*root, st);
+        Station* st = createStationFromLine(line);
+        if (st) {
+            root = insertStation(root, st);
+        }
     }
 
     fclose(fp);
-    
-
-
+    return root;
 }
